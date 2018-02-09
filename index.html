@@ -43,7 +43,7 @@
 <script>
 var ltsLayers = [
     {id:"legend-lts1", url: 'data/level_1.json', name:'LTS 1 - Suitable for children', color:'#0099cc', opacity:0.5, tileset:'mapbox://zzptichka.53bf2frg', layer:'level_1-45ccc2'},
-    {id:"legend-lts2", url: 'data/level_2json', name:'LTS-2 - Low stress', color:'#1C7C54', opacity:0.5, tileset:'mapbox://zzptichka.771hbw7i', layer:'level_2-18vk61'},
+    {id:"legend-lts2", url: 'data/level_2.json', name:'LTS-2 - Low stress', color:'#1C7C54', opacity:0.5, tileset:'mapbox://zzptichka.771hbw7i', layer:'level_2-18vk61'},
     {id:"legend-lts3", url: 'data/level_3.json', name:'LTS-3 - Medium stress', color:'#F0C808', opacity:0.5, tileset:'mapbox://zzptichka.5jgkszgd', layer:'level_3-97ctwn'},
     {id:"legend-lts4", url: 'data/level_4.json', name:'LTS-4 - High stress', color:'#DD5454', opacity:0.5, tileset:'mapbox://zzptichka.4ioiilcy', layer:'level_4-b8wity'}
   ];
@@ -131,7 +131,7 @@ function getFeaturesNearby(point, maxMeters, breakOnFirst)
 }
 
 
-function displayOsmElementInfo(element, latlng) {
+function displayOsmElementInfo(element, lngLat) {
 
   const xhr = new XMLHttpRequest()
   xhr.open('GET','https://api.openstreetmap.org/api/0.6/'+element)
@@ -147,7 +147,7 @@ function displayOsmElementInfo(element, latlng) {
     } else {
       popup += 'Failed to request details from osm.org';
     }
-    map.openPopup(popup, latlng);
+    map.openPopup(popup, lngLat);
   }
   xhr.send()
 }
@@ -156,15 +156,15 @@ function displayOsmElementInfo(element, latlng) {
 let highlight;
 let timer;
 map.on('mousemove', function(e) {
-  const features = getFeaturesNearby([e.latlng.lng,e.latlng.lat], 5, true)
+  const features = getFeaturesNearby([e.lngLat.lng,e.lngLat.lat], 5, true)
   clearTimeout(timer);
   if (features.length!=0) {
-    document.getElementById('mapid').style.cursor = 'pointer'
+    document.getElementById('map').style.cursor = 'pointer'
   }
   else {
     timer = setTimeout(function()
                 {
-	                 document.getElementById('mapid').style.cursor = ''
+	                 document.getElementById('map').style.cursor = ''
                  }, 100);
   }
 })
@@ -173,9 +173,9 @@ map.on('click', function(e) {
   if (highlight){
     map.removeLayer(highlight)
   }
-  const features = getFeaturesNearby([e.latlng.lng,e.latlng.lat], 5, true);
+  const features = getFeaturesNearby([e.lngLat.lng,e.lngLat.lat], 5, true);
   if (features.length!=0) {
-    displayOsmElementInfo(features[0].id, e.latlng);
+    displayOsmElementInfo(features[0].id, e.lngLat);
     highlight = new L.geoJson(features[0],{style: {color:'#df42f4',  weight: 5}}).addTo(map);
     map.on('popupclose', function() {
      map.removeLayer(highlight)
