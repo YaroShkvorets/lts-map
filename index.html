@@ -147,7 +147,10 @@ function displayOsmElementInfo(element, lngLat) {
     } else {
       popup += 'Failed to request details from osm.org';
     }
-    map.openPopup(popup, lngLat);
+    var pop = new mapboxgl.Popup()
+    .setLngLat(lngLat)
+    .setHTML(popup)
+    .addTo(map);
   }
   xhr.send()
 }
@@ -170,15 +173,32 @@ map.on('mousemove', function(e) {
 })
 
 map.on('click', function(e) {
-  if (highlight){
-    map.removeLayer(highlight)
+
+  if(map.getLayer('highlight')){
+    map.removeLayer('highlight')
   }
   const features = getFeaturesNearby([e.lngLat.lng,e.lngLat.lat], 5, true);
   if (features.length!=0) {
     displayOsmElementInfo(features[0].id, e.lngLat);
-    highlight = new L.geoJson(features[0],{style: {color:'#df42f4',  weight: 5}}).addTo(map);
+    //highlight = new L.geoJson(features[0],{style: {color:'#df42f4',  weight: 5}}).addTo(map);
+    map.addLayer({
+       "id": "highlight",
+       "type": "line",
+       "source": {
+           "type": "geojson",
+           "data": features[0]
+       },
+       "layout": {
+           "line-join": "round",
+           "line-cap": "round"
+       },
+       "paint": {
+           "line-color": "#df42f4",
+           "line-width": 5
+       }
+   });
     map.on('popupclose', function() {
-     map.removeLayer(highlight)
+     map.removeLayer('highlight')
    });
   }
  });
