@@ -26,13 +26,13 @@
   <form>
     <h5>Street legend</h5>
     <fieldset class='checkbox-pill clearfix '>
-      <input type='checkbox' id='legend-lts1'>
+      <input type='checkbox' id='legend-lts1' checked='checked'>
       <label for='legend-lts1' id='legend-lts1-label' class='button icon check quiet col12' style="text-align:left;">LTS-1</label>
-      <input type='checkbox' id='legend-lts2'>
+      <input type='checkbox' id='legend-lts2' checked='checked'>
       <label for='legend-lts2' id='legend-lts2-label' class='button icon check quiet col12' style="text-align:left;">LTS-2</label>
-      <input type='checkbox' id='legend-lts3'>
+      <input type='checkbox' id='legend-lts3' checked='checked'>
       <label for='legend-lts3' id='legend-lts3-label' class='button icon check quiet col12' style="text-align:left;">LTS-3</label>
-      <input type='checkbox' id='legend-lts4'>
+      <input type='checkbox' id='legend-lts4' checked='checked'>
       <label for='legend-lts4' id='legend-lts4-label' class='button icon check quiet col12' style="text-align:left;">LTS-4</label>
     </fieldset>
 
@@ -42,10 +42,10 @@
 
 <script>
 var ltsLayers = [
-    {id:"legend-lts1", url: 'data/level_1.json', name:'LTS 1 - Suitable for children', color:'#0099cc', opacity:0.5, tileset:'mapbox://zzptichka.53bf2frg', layer:'level_1-45ccc2'},
-    {id:"legend-lts2", url: 'data/level_2.json', name:'LTS-2 - Low stress', color:'#1C7C54', opacity:0.5, tileset:'mapbox://zzptichka.771hbw7i', layer:'level_2-18vk61'},
-    {id:"legend-lts3", url: 'data/level_3.json', name:'LTS-3 - Medium stress', color:'#F0C808', opacity:0.5, tileset:'mapbox://zzptichka.5jgkszgd', layer:'level_3-97ctwn'},
-    {id:"legend-lts4", url: 'data/level_4.json', name:'LTS-4 - High stress', color:'#DD5454', opacity:0.5, tileset:'mapbox://zzptichka.4ioiilcy', layer:'level_4-b8wity'}
+    {id:"legend-lts1", url: 'data/level_1.json', name:'LTS 1 - Suitable for children', color:'#0099cc', opacity:0.9, tileset:'mapbox://zzptichka.53bf2frg', layer:'level_1-45ccc2'},
+    {id:"legend-lts2", url: 'data/level_2.json', name:'LTS-2 - Low stress', color:'#1C7C54', opacity:0.9, tileset:'mapbox://zzptichka.771hbw7i', layer:'level_2-18vk61'},
+    {id:"legend-lts3", url: 'data/level_3.json', name:'LTS-3 - Medium stress', color:'#F0C808', opacity:0.9, tileset:'mapbox://zzptichka.5jgkszgd', layer:'level_3-97ctwn'},
+    {id:"legend-lts4", url: 'data/level_4.json', name:'LTS-4 - High stress', color:'#DD5454', opacity:0.9, tileset:'mapbox://zzptichka.4ioiilcy', layer:'level_4-b8wity'}
   ];
 
 const tree = rbush.rbush();
@@ -107,7 +107,6 @@ map.on('style.load', function () {
           "line-opacity": layer.opacity
       }
     });
-    map.setLayoutProperty(layer.id, 'visibility', 'none');
     document.getElementById(layer.id+'-label').innerHTML = '<span style="display: inline-block;width:50px; height:8px;background-color: '+layer.color+'"></span>&nbsp;'+layer.name;
   });
 
@@ -131,6 +130,7 @@ function getFeaturesNearby(point, maxMeters, breakOnFirst)
 }
 
 
+let i=0;
 function displayOsmElementInfo(element, lngLat) {
 
   const xhr = new XMLHttpRequest()
@@ -150,39 +150,31 @@ function displayOsmElementInfo(element, lngLat) {
     var pop = new mapboxgl.Popup()
     .setLngLat(lngLat)
     .setHTML(popup)
-    .addTo(map);
+    .addTo(map)
   }
   xhr.send()
 }
 
 
-let highlight;
+
 let timer;
 map.on('mousemove', function(e) {
   const features = getFeaturesNearby([e.lngLat.lng,e.lngLat.lat], 5, true)
-  clearTimeout(timer);
-  if (features.length!=0) {
-    document.getElementById('map').style.cursor = 'pointer'
-  }
-  else {
-    timer = setTimeout(function()
-                {
-	                 document.getElementById('map').style.cursor = ''
-                 }, 100);
-  }
+  map.getCanvas().style.cursor = (features.length==0)?'':'pointer'
+
 })
 
 map.on('click', function(e) {
 
-  if(map.getLayer('highlight')){
-    map.removeLayer('highlight')
+  if(map.getLayer('highlight'+i)){
+    map.removeLayer('highlight'+i)
+    i++
   }
   const features = getFeaturesNearby([e.lngLat.lng,e.lngLat.lat], 5, true);
   if (features.length!=0) {
     displayOsmElementInfo(features[0].id, e.lngLat);
-    //highlight = new L.geoJson(features[0],{style: {color:'#df42f4',  weight: 5}}).addTo(map);
     map.addLayer({
-       "id": "highlight",
+       "id": "highlight"+i, //new layer for each highlight - for some reason layers can't be fully removed
        "type": "line",
        "source": {
            "type": "geojson",
@@ -194,12 +186,11 @@ map.on('click', function(e) {
        },
        "paint": {
            "line-color": "#df42f4",
-           "line-width": 5
+           "line-width": 5,
+           "line-opacity": 0.5
        }
    });
-    map.on('popupclose', function() {
-     map.removeLayer('highlight')
-   });
+
   }
  });
 
