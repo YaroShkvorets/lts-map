@@ -158,7 +158,7 @@ let i=0
 map.on('click', function(e) {
 
     var features = map.queryRenderedFeatures(e.point, {
-                layers: ['lts1', 'lts2', 'lts3', 'lts4']
+                layers: ltsLayers.map(l=>l.id)
             });
     if (!features.length) {
         return;
@@ -173,7 +173,7 @@ map.on('click', function(e) {
 
 map.on('mousemove', function(e) {
     var features = map.queryRenderedFeatures(e.point, {
-                layers: ['lts1', 'lts2', 'lts3', 'lts4']
+                layers: ltsLayers.map(l=>l.id)
             });
     map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
 });
