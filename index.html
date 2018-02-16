@@ -26,12 +26,7 @@
 <body>
 <div id='app' class='col12 contain clip'>
 <div id='map'></div>
-<div id='legendbtn' class='pin-right pad2 '>
-  <a href='#legend' class='button' onclick="document.getElementById('legendbtn').style.display='none'">Legend</a>
-</div>
-<div id='legend' class='col4 pad2 row7 pin-right offcanvas-right '>
-  <a href='#' class='fill-darken2 pad1 icon close button fr' onclick="document.getElementById('legendbtn').style.display='block'"></a>
-  <div class='clearfix'></div>
+<div id='legend' class='col4 pad2 row5 pin-right offcanvas-right '>
   <form>
     <h5>Street legend</h5>
     <fieldset class='checkbox-pill clearfix '>
@@ -151,7 +146,7 @@ map.once('style.load', function () {
 
     init()
     map.addControl(new mapboxgl.NavigationControl(),'bottom-right');
-
+    map.addControl(new mapboxgl.ScaleControl(), 'bottom-left');
 });
 
 let i=0
