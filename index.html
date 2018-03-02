@@ -5,6 +5,7 @@
     <title>Ottawa cycling stress map</title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.js'></script>
+    <script  data-cfasync="false" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.0/mapbox-gl.css' rel='stylesheet' />
     <link href='https://www.mapbox.com/base/latest/base.css' rel='stylesheet' />
     <style>
@@ -181,14 +182,20 @@ function displayOsmElementInfo(element, lngLat) {
   const xhr = new XMLHttpRequest()
   xhr.open('GET','https://api.openstreetmap.org/api/0.6/'+element)
   xhr.onload = function () {
-    let popup = '<b><a href="https://www.openstreetmap.org/' + element + '" target="_blank">' + element + '</a></b><hr>'
+    let popup = '<h4><a href="https://www.openstreetmap.org/' + element + '" target="_blank">' + element + '</a></h4><hr><ul>'
     if (xhr.status === 200) {
       const xmlDOM = new DOMParser().parseFromString(xhr.responseText, 'text/xml');
       const tags = xmlDOM.getElementsByTagName("tag");
       for(let i=0; i<tags.length; i++)
       {
-        popup += tags[i].attributes["k"].value+": <b>"+tags[i].attributes["v"].value+'</b><br>';
+        if(tags[i].attributes["k"].value == 'source') continue;
+        if(tags[i].attributes["k"].value == 'name:fr') continue;
+        popup += '<li>'+tags[i].attributes["k"].value+": <b>"+tags[i].attributes["v"].value+'</b></li>';
       }
+      popup+='</ul><hr><div id="clickme" class="quiet text-right small">Report an error</div>';
+      popup+='<div id="fform" class="hidden"><form id="feedback"><p><textarea id="comment" name="comment" class="small"></textarea></p>';
+      popup+='<input type="hidden" name="link" value="https://www.openstreetmap.org/' + element + '">';
+      popup+='<p id="result"></p><input type="submit" value="Submit" /></form></div>';
     } else {
       popup += 'Failed to request details from osm.org';
     }
@@ -196,13 +203,40 @@ function displayOsmElementInfo(element, lngLat) {
     .setLngLat(lngLat)
     .setHTML(popup)
     .addTo(map)
+
+    $( "#clickme" ).click(function() {
+      $(this).toggle('slow');
+      $( "#fform" ).toggle('slow');
+    });
+    var request;
+  	$("#feedback").submit(function(event){
+  		if (request) {
+  			request.abort();
+  		}
+  		var $form = $(this);
+  		var $inputs = $form.find("input, select, button, textarea");
+  		var serializedData = $form.serialize();
+	    $inputs.prop("disabled", true);
+  		$('#result').text('Sending ...');
+  		request = $.ajax({
+  			url: "https://script.google.com/macros/s/AKfycbya64PfAcZ36ia3dJpleAxokuPRFPa9X-3j9nR1M2mZgBdRx94y/exec",
+  			type: "post",
+  			data: serializedData
+  		});
+  		request.done(function (response, textStatus, jqXHR){
+  			$('#result').html('Thanks! We\'ll look into it</a>');
+  		}).fail(function (jqXHR, textStatus, errorThrown){
+  			$('#result').html('An error occured. Try again later.');
+  		}).always(function () {
+  			$inputs.prop("disabled", false);
+  		});
+  		event.preventDefault();
+  	});
   }
   xhr.send()
 }
 
-
-
 </script>
-
+<!--https://docs.google.com/spreadsheets/d/1Rx1SjhWXwkMsHFAioP9XE42Or9S7Ob7JYPLUzSMe-T8/edit?usp=sharing -->
 </body>
 </html>
